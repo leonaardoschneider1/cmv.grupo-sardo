@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de CMV - Restaurante</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .month-selector select, .month-selector input {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            margin: 2px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .card.positive .value {
+            color: #27ae60;
+        }
+        
+        .card.neutral .value {
+            color: #3498db;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .inventory-section .section-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .inventory-form {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .day-cell {
+            font-weight: 600;
+            background: #ecf0f1;
+            width: 60px;
+        }
+        
+        .weekend {
+            background: #fee;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .cmv-cell {
+            font-weight: bold;
+        }
+        
+        .cmv-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .cmv-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .cmv-good {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .total-row {
+            background: #2c3e50;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .export-section {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .status-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            max-width: 400px;
+        }
+        
+        .status-message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .auto-save-indicator {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .inventory-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                padding: 20px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Controle de CMV</h1>
+            <p>Gestão Profissional de Custo da Mercadoria Vendida</p>
+        </div>
+        
+        <div class="controls">
+            <div class="month-selector">
+                <label for="month">Mês:</label>
+                <select id="month">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9" selected>Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                
+                <label for="year">Ano:</label>
+                <input type="number" id="year" value="2025" min="2020" max="2030">
+                
+                <button class="btn btn-primary" onclick="changeMonth()">📅 Carregar Mês</button>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <div id="connectionStatus" class="status-indicator status-loading">
+                    <div class="spinner"></div>
+                    Conectando...
+                </div>
+                <button class="btn btn-primary" onclick="testConnectionManual()" id="testBtn">🔍 Testar Conexão</button>
+                <button class="btn btn-success" onclick="saveToSheets()" id="saveBtn">💾 Gravar Dados</button>
+                <button class="btn btn-primary" onclick="loadFromSheets()" id="loadBtn">🔄 Atualizar</button>
+                <button class="btn btn-warning" onclick="exportToCSV()">📤 Exportar CSV</button>
+            </div>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="card neutral">
+                <h3>Estoque Inicial</h3>
+                <div class="value" id="estoqueInicialDisplay">R$ 0,00</div>
+            </div>
+            <div class="card neutral">
+                <h3>Estoque Final</h3>
+                <div class="value" id="estoqueFinalDisplay">R$ 0,00</div>
+            </div>
+            <div class="card neutral">
+                <h3>Compras do Mês</h3>
+                <div class="value" id="comprasMesDisplay">R$ 0,00</div>
+            </div>
+            <div class="card positive">
+                <h3>Faturamento</h3>
+                <div class="value" id="faturamentoMesDisplay">R$ 0,00</div>
+            </div>
+            <div class="card">
+                <h3>CMV do Mês</h3>
+                <div class="value" id="cmvMesDisplay">R$ 0,00</div>
+            </div>
+            <div class="card">
+                <h3>CMV %</h3>
+                <div class="value" id="cmvPercentDisplay">0,00%</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- Seção de Estoque -->
+            <div class="section inventory-section">
+                <div class="section-header">
+                    <h2>📦 Controle de Estoque Mensal</h2>
+                    <div class="auto-save-indicator" id="estoqueAutoSave">
+                        <small>Auto-salvamento ativado</small>
+                    </div>
+                </div>
+                <div class="inventory-form">
+                    <div class="form-group">
+                        <label for="estoqueInicial">💰 Estoque Inicial (R$)</label>
+                        <input type="number" id="estoqueInicial" step="0.01" placeholder="0,00" oninput="handleInputChange(this)">
+                        <small>Valor do estoque no primeiro dia do mês</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="estoqueFinal">🏪 Estoque Final (R$)</label>
+                        <input type="number" id="estoqueFinal" step="0.01" placeholder="0,00" oninput="handleInputChange(this)">
+                        <small>Valor do estoque no último dia do mês</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção de Movimentação Diária -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>📋 Movimentação Diária</h2>
+                    <div class="auto-save-indicator" id="dailyAutoSave">
+                        <small>Salva automaticamente a cada alteração</small>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="dailyTable">
+                        <thead>
+                            <tr>
+                                <th>Dia</th>
+                                <th>Data</th>
+                                <th>Dia da Semana</th>
+                                <th>💵 Vendas (R$)</th>
+                                <th>🛒 Notas Fiscais (R$)</th>
+                                <th>📊 CMV Diário (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyTableBody">
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="3">TOTAL DO MÊS</td>
+                                <td id="totalVendas">R$ 0,00</td>
+                                <td id="totalCompras">R$ 0,00</td>
+                                <td id="mediaCMV">0,00%</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="export-section">
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <h3 style="color: #155724; margin-bottom: 10px;">✅ Google Sheets Configurado!</h3>
+                <p style="color: #155724; margin: 0;"><strong>URL Ativa:</strong> ...AKfycbw137BhqyZFsJAHkyOWsKeZZuwYP9bFvNCyPN9TqYL8TVQbgEkVsOFpni6pujxSzN-J/exec</p>
+                <p style="color: #155724; margin: 10px 0 0 0; font-size: 0.9rem;">Conexão estabelecida! Seus dados serão salvos automaticamente.</p>
+            </div>
+            
+            <div style="display: none; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin-bottom: 20px;" id="troubleshootBox">
+                <h3 style="color: #856404; margin-bottom: 10px;">⚠️ Problemas de Conexão? Código para Google Apps Script:</h3>
+                <textarea readonly style="width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace; font-size: 12px; margin-top: 10px;">
+const SHEET_PREFIX = '';
+const TIMEZONE = 'America/Sao_Paulo';
+
+function getOrCreateSheet(month, year) {
+  const name = \`\${year}-\${('0' + month).slice(-2)}\`;
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(SHEET_PREFIX + name);
+  if (!sh) sh = ss.insertSheet(SHEET_PREFIX + name);
+  return sh;
+}
+
+function doPost(e) {
+  try {
+    let payload;
+    if (e.postData && e.postData.contents) {
+      payload = JSON.parse(e.postData.contents);
+    } else if (e.parameter && e.parameter.payload) {
+      payload = JSON.parse(e.parameter.payload);
+    } else {
+      return json({status:'error', message:'Payload não encontrado'});
+    }
+    
+    if (payload.action === 'save') {
+      const sh = getOrCreateSheet(payload.month, payload.year);
+      sh.clear();
+      
+      const headers = payload.headers;
+      if (headers) {
+        sh.getRange(1,1,1,headers.length).setValues([headers]);
+      }
+      
+      let matrix = payload.rows || [];
+      if (matrix.length) {
+        sh.getRange(2, 1, matrix.length, matrix[0].length).setValues(matrix);
+      }
+      
+      return json({status:'ok', inserted: matrix.length});
+    }
+    return json({status:'error', message:'Ação inválida'});
+  } catch (err) {
+    return json({status:'error', message:String(err)});
+  }
+}
+
+function doGet(e) {
+  try {
+    const action = (e.parameter.action || 'load').toLowerCase();
+    if (action === 'load') {
+      const month = Number(e.parameter.month);
+      const year = Number(e.parameter.year);
+      const sh = getOrCreateSheet(month, year);
+      const values = sh.getDataRange().getValues();
+      if (values.length <= 1) return json({status:'ok', headers:[], rows:[]});
+      const headers = values.shift();
+      const rows = values.map(r => {
+        const obj = {};
+        headers.forEach((h,i)=> obj[h]=r[i]);
+        return obj;
+      });
+      return json({status:'ok', headers, rows});
+    } else if (action === 'test') {
+      return json({status:'ok', message:'API funcionando!'});
+    }
+    return json({status:'error', message:'Ação inválida'});
+  } catch (err) {
+    return json({status:'error', message:String(err)});
+  }
+}
+
+function json(obj){
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+                </textarea>
+                <button onclick="document.getElementById('troubleshootBox').style.display='none'" style="margin-top: 10px; padding: 5px 15px; background: #ffc107; border: none; border-radius: 4px; cursor: pointer;">Fechar</button>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="document.getElementById('troubleshootBox').style.display='block'" style="padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px;">
+                    🔧 Ver Código do Apps Script
+                </button>
+                <p style="margin-top: 15px;"><strong>☁️ Dados salvos automaticamente no Google Sheets em tempo real!</strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mensagem de status -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <script>
+        // Configuração da API
+        const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzpz-x3ijUIKPB1HEpZz796nIuY_Sr-BbpgGr12jQS88xTj5DR6n199qK6CZ1GPVLwAjg/exec';
+        
+        let currentMonth = 9;
+        let currentYear = 2025;
+        let autoSaveTimeout = null;
+        let isLoading = false;
+        
+        const monthNames = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        
+        function getDaysInMonth(month, year) {
+            return new Date(year, month, 0).getDate();
+        }
+        
+        function getDayOfWeek(day, month, year) {
+            const date = new Date(year, month - 1, day);
+            return date.getDay();
+        }
+        
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value || 0);
+        }
+        
+        function formatPercent(value) {
+            return (value || 0).toFixed(2) + '%';
+        }
+        
+        function showStatusMessage(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type} show`;
+            
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 4000);
+        }
+        
+        function updateConnectionStatus(status, message) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `status-indicator status-${status}`;
+            
+            if (status === 'loading') {
+                statusEl.innerHTML = '<div class="spinner"></div> ' + message;
+            } else if (status === 'connected') {
+                statusEl.innerHTML = '✅ ' + message;
+            } else {
+                statusEl.innerHTML = '❌ ' + message;
+            }
+        }
+        
+        function handleInputChange(element) {
+            // Calcular CMV em tempo real
+            if (element.id.startsWith('vendas_') || element.id.startsWith('compras_')) {
+                const day = element.id.split('_')[1];
+                calculateDaily(parseInt(day));
+            } else {
+                calculateCMV();
+            }
+            
+            // Auto-save com debounce
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                saveToSheets();
+            }, 1000);
+        }
+        
+        async function testConnection() {
+            try {
+                updateConnectionStatus('loading', 'Testando conexão...');
+                const response = await fetch(`${SHEETS_URL}?action=test`);
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    updateConnectionStatus('connected', 'Conectado ao Google Sheets');
+                    return true;
+                } else {
+                    updateConnectionStatus('error', 'Erro na conexão');
+                    return false;
+                }
+            } catch (error) {
+                updateConnectionStatus('error', 'Sem conexão');
+                return false;
+            }
+        }
+        
+        function changeMonth() {
+            currentMonth = parseInt(document.getElementById('month').value);
+            currentYear = parseInt(document.getElementById('year').value);
+            
+            updateCalendar();
+            loadFromSheets();
+        }
+        
+        function updateCalendar() {
+            const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+            const tableBody = document.getElementById('dailyTableBody');
+            
+            tableBody.innerHTML = '';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayOfWeek = getDayOfWeek(day, currentMonth, currentYear);
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                
+                const row = document.createElement('tr');
+                if (isWeekend) row.classList.add('weekend');
+                
+                row.innerHTML = `
+                    <td class="day-cell">${day}</td>
+                    <td>${day.toString().padStart(2, '0')}/${currentMonth.toString().padStart(2, '0')}/${currentYear}</td>
+                    <td>${dayNames[dayOfWeek]}</td>
+                    <td><input type="number" step="0.01" placeholder="0,00" oninput="handleInputChange(this)" id="vendas_${day}"></td>
+                    <td><input type="number" step="0.01" placeholder="0,00" oninput="handleInputChange(this)" id="compras_${day}"></td>
+                    <td class="cmv-cell" id="cmv_${day}">0,00%</td>
+                `;
+                
+                tableBody.appendChild(row);
+            }
+            
+            calculateCMV();
+        }
+        
+        function calculateDaily(day) {
+            const vendas = parseFloat(document.getElementById(`vendas_${day}`).value) || 0;
+            const compras = parseFloat(document.getElementById(`compras_${day}`).value) || 0;
+            
+            const cmvDiario = vendas > 0 ? (compras / vendas) * 100 : 0;
+            const cmvCell = document.getElementById(`cmv_${day}`);
+            
+            cmvCell.textContent = formatPercent(cmvDiario);
+            
+            // Aplicar cores baseadas no CMV
+            cmvCell.className = 'cmv-cell';
+            if (cmvDiario > 40) {
+                cmvCell.classList.add('cmv-high');
+            } else if (cmvDiario > 25) {
+                cmvCell.classList.add('cmv-medium');
+            } else if (cmvDiario > 0) {
+                cmvCell.classList.add('cmv-good');
+            }
+            
+            calculateTotals();
+            calculateCMV();
+        }
+        
+        function calculateTotals() {
+            const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+            let totalVendas = 0;
+            let totalCompras = 0;
+            let diasComVendas = 0;
+            let somaCMVDiario = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const vendasEl = document.getElementById(`vendas_${day}`);
+                const comprasEl = document.getElementById(`compras_${day}`);
+                
+                if (vendasEl && comprasEl) {
+                    const vendas = parseFloat(vendasEl.value) || 0;
+                    const compras = parseFloat(comprasEl.value) || 0;
+                    
+                    totalVendas += vendas;
+                    totalCompras += compras;
+                    
+                    if (vendas > 0) {
+                        diasComVendas++;
+                        somaCMVDiario += (compras / vendas) * 100;
+                    }
+                }
+            }
+            
+            document.getElementById('totalVendas').textContent = formatCurrency(totalVendas);
+            document.getElementById('totalCompras').textContent = formatCurrency(totalCompras);
+            
+            const mediaCMV = diasComVendas > 0 ? somaCMVDiario / diasComVendas : 0;
+            document.getElementById('mediaCMV').textContent = formatPercent(mediaCMV);
+            
+            // Atualizar cards
+            document.getElementById('comprasMesDisplay').textContent = formatCurrency(totalCompras);
+            document.getElementById('faturamentoMesDisplay').textContent = formatCurrency(totalVendas);
+        }
+        
+        function calculateCMV() {
+            const estoqueInicial = parseFloat(document.getElementById('estoqueInicial').value) || 0;
+            const estoqueFinal = parseFloat(document.getElementById('estoqueFinal').value) || 0;
+            
+            // Calcular totais das vendas e compras
+            const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+            let totalCompras = 0;
+            let totalVendas = 0;
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const comprasElement = document.getElementById(`compras_${day}`);
+                const vendasElement = document.getElementById(`vendas_${day}`);
+                
+                if (comprasElement) totalCompras += parseFloat(comprasElement.value) || 0;
+                if (vendasElement) totalVendas += parseFloat(vendasElement.value) || 0;
+            }
+            
+            // CMV = Estoque Inicial + Compras - Estoque Final
+            const cmvMes = estoqueInicial + totalCompras - estoqueFinal;
+            const cmvPercent = totalVendas > 0 ? (cmvMes / totalVendas) * 100 : 0;
+            
+            // Atualizar displays
+            document.getElementById('estoqueInicialDisplay').textContent = formatCurrency(estoqueInicial);
+            document.getElementById('estoqueFinalDisplay').textContent = formatCurrency(estoqueFinal);
+            document.getElementById('cmvMesDisplay').textContent = formatCurrency(cmvMes);
+            document.getElementById('cmvPercentDisplay').textContent = formatPercent(cmvPercent);
+            
+            // Aplicar cores aos cards do CMV
+            const cmvCard = document.getElementById('cmvMesDisplay').parentElement;
+            const percentCard = document.getElementById('cmvPercentDisplay').parentElement;
+            
+            cmvCard.className = 'card';
+            percentCard.className = 'card';
+            
+            if (cmvPercent <= 25) {
+                cmvCard.classList.add('positive');
+                percentCard.classList.add('positive');
+            } else if (cmvPercent <= 40) {
+                cmvCard.classList.add('neutral');
+                percentCard.classList.add('neutral');
+            }
+        }
+        
+        async function saveToSheets() {
+            if (isLoading) return;
+            
+            try {
+                isLoading = true;
+                document.getElementById('saveBtn').disabled = true;
+                document.getElementById('saveBtn').textContent = '💾 Gravando...';
+                
+                const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+                const estoqueInicial = parseFloat(document.getElementById('estoqueInicial').value) || 0;
+                const estoqueFinal = parseFloat(document.getElementById('estoqueFinal').value) || 0;
+                
+                // Preparar dados no formato que a API espera
+                const headers = ['Tipo', 'Dia', 'Data', 'DíaDaSemana', 'Vendas', 'Compras', 'CMVDiario', 'EstoqueInicial', 'EstoqueFinal'];
+                const rows = [];
+                
+                // Adicionar dados de estoque
+                rows.push(['ESTOQUE', '', '', '', '', '', '', estoqueInicial, estoqueFinal]);
+                
+                // Adicionar dados diários
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const vendasEl = document.getElementById(`vendas_${day}`);
+                    const comprasEl = document.getElementById(`compras_${day}`);
+                    
+                    if (vendasEl && comprasEl) {
+                        const vendas = parseFloat(vendasEl.value) || 0;
+                        const compras = parseFloat(comprasEl.value) || 0;
+                        const cmvDiario = vendas > 0 ? (compras / vendas * 100).toFixed(2) : 0;
+                        const dayOfWeek = getDayOfWeek(day, currentMonth, currentYear);
+                        const date = `${day.toString().padStart(2, '0')}/${currentMonth.toString().padStart(2, '0')}/${currentYear}`;
+                        
+                        rows.push(['DIARIO', day, date, dayNames[dayOfWeek], vendas, compras, cmvDiario, '', '']);
+                    }
+                }
+                
+                const payload = {
+                    action: 'save',
+                    month: currentMonth,
+                    year: currentYear,
+                    headers: headers,
+                    rows: rows
+                };
+                
+                const response = await fetch(SHEETS_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    showStatusMessage(`✅ Dados salvos no Google Sheets! (${result.inserted || 0} registros)`, 'success');
+                    updateConnectionStatus('connected', 'Dados sincronizados');
+                } else {
+                    showStatusMessage('❌ Erro ao salvar: ' + (result.message || 'Erro desconhecido'), 'error');
+                    updateConnectionStatus('error', 'Erro ao salvar');
+                }
+            } catch (error) {
+                showStatusMessage('❌ Erro de conexão: ' + error.message, 'error');
+                updateConnectionStatus('error', 'Sem conexão');
+            } finally {
+                isLoading = false;
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('saveBtn').textContent = '💾 Gravar Dados';
+            }
+        }
+        
+        async function loadFromSheets() {
+            if (isLoading) return;
+            
+            try {
+                isLoading = true;
+                document.getElementById('loadBtn').disabled = true;
+                document.getElementById('loadBtn').textContent = '🔄 Carregando...';
+                updateConnectionStatus('loading', 'Carregando dados...');
+                
+                const response = await fetch(`${SHEETS_URL}?action=load&month=${currentMonth}&year=${currentYear}`);
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    // Limpar dados atuais
+                    document.getElementById('estoqueInicial').value = '';
+                    document.getElementById('estoqueFinal').value = '';
+                    
+                    const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const vendasEl = document.getElementById(`vendas_${day}`);
+                        const comprasEl = document.getElementById(`compras_${day}`);
+                        if (vendasEl) vendasEl.value = '';
+                        if (comprasEl) comprasEl.value = '';
+                    }
+                    
+                    // Carregar dados da planilha
+                    if (result.rows && result.rows.length > 0) {
+                        result.rows.forEach(row => {
+                            if (row.Tipo === 'ESTOQUE') {
+                                if (row.EstoqueInicial) {
+                                    document.getElementById('estoqueInicial').value = row.EstoqueInicial;
+                                }
+                                if (row.EstoqueFinal) {
+                                    document.getElementById('estoqueFinal').value = row.EstoqueFinal;
+                                }
+                            } else if (row.Tipo === 'DIARIO' && row.Dia) {
+                                const day = parseInt(row.Dia);
+                                const vendasEl = document.getElementById(`vendas_${day}`);
+                                const comprasEl = document.getElementById(`compras_${day}`);
+                                
+                                if (vendasEl && row.Vendas) {
+                                    vendasEl.value = row.Vendas;
+                                }
+                                if (comprasEl && row.Compras) {
+                                    comprasEl.value = row.Compras;
+                                }
+                                
+                                if (vendasEl || comprasEl) {
+                                    calculateDaily(day);
+                                }
+                            }
+                        });
+                        
+                        calculateCMV();
+                        showStatusMessage(`✅ Dados carregados do Google Sheets! (${result.rows.length} registros)`, 'success');
+                        updateConnectionStatus('connected', 'Dados carregados');
+                    } else {
+                        showStatusMessage('📝 Nenhum dado encontrado para este mês.', 'success');
+                        updateConnectionStatus('connected', 'Mês vazio');
+                    }
+                } else {
+                    showStatusMessage('❌ Erro ao carregar: ' + (result.message || 'Erro desconhecido'), 'error');
+                    updateConnectionStatus('error', 'Erro ao carregar');
+                }
+            } catch (error) {
+                showStatusMessage('❌ Erro de conexão: ' + error.message, 'error');
+                updateConnectionStatus('error', 'Sem conexão');
+            } finally {
+                isLoading = false;
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').textContent = '🔄 Atualizar';
+            }
+        }
+        
+        function exportToCSV() {
+            const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+            let csv = 'Data,Dia da Semana,Vendas (R$),Compras/Notas Fiscais (R$),CMV Diário (%)\n';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayOfWeek = getDayOfWeek(day, currentMonth, currentYear);
+                const vendasEl = document.getElementById(`vendas_${day}`);
+                const comprasEl = document.getElementById(`compras_${day}`);
+                const cmvEl = document.getElementById(`cmv_${day}`);
+                
+                const vendas = vendasEl ? vendasEl.value || '0' : '0';
+                const compras = comprasEl ? comprasEl.value || '0' : '0';
+                const cmv = cmvEl ? cmvEl.textContent : '0,00%';
+                
+                csv += `${day.toString().padStart(2, '0')}/${currentMonth.toString().padStart(2, '0')}/${currentYear},`;
+                csv += `${dayNames[dayOfWeek]},`;
+                csv += `${vendas.replace('.', ',')},`;
+                csv += `${compras.replace('.', ',')},`;
+                csv += `${cmv}\n`;
+            }
+            
+            // Adicionar resumo mensal
+            const estoqueInicial = document.getElementById('estoqueInicial').value || '0';
+            const estoqueFinal = document.getElementById('estoqueFinal').value || '0';
+            const totalVendas = document.getElementById('totalVendas').textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const totalCompras = document.getElementById('totalCompras').textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const cmvMes = document.getElementById('cmvMesDisplay').textContent.replace('R$ ', '').replace('.', '').replace(',', '.');
+            const cmvPercent = document.getElementById('cmvPercentDisplay').textContent;
+            
+            csv += '\n--- RESUMO MENSAL ---\n';
+            csv += `Estoque Inicial,${estoqueInicial.replace('.', ',')}\n`;
+            csv += `Estoque Final,${estoqueFinal.replace('.', ',')}\n`;
+            csv += `Total Vendas,${totalVendas.replace('.', ',')}\n`;
+            csv += `Total Compras,${totalCompras.replace('.', ',')}\n`;
+            csv += `CMV do Mês,${cmvMes.replace('.', ',')}\n`;
+            csv += `CMV %,${cmvPercent}\n`;
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `CMV_${monthNames[currentMonth-1]}_${currentYear}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatusMessage('📤 Arquivo CSV exportado com sucesso!', 'success');
+        }
+        
+        function testConnectionManual() {
+            testConnection();
+        }
+        
+        // Inicializar a aplicação
+        document.addEventListener('DOMContentLoaded', async function() {
+            updateCalendar();
+            
+            // Testar conexão ao carregar com delay
+            setTimeout(async () => {
+                const connected = await testConnection();
+                if (connected) {
+                    // Carregar dados automaticamente se conectado
+                    await loadFromSheets();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
